@@ -85,8 +85,7 @@ class Window(QWidget):
                     msg.setText("Win Circle")
                     msg.exec()
 
-                elif i[0] in self.used_cross_figure and i[1] in self.used_cross_figure and i[
-                    2] in self.used_cross_figure:
+                elif i[0] in self.used_cross_figure and i[1] in self.used_cross_figure and i[2] in self.used_cross_figure:
                     self.cross += 1
                     self.lbl_cross.setText(f':{self.cross}')
                     self.play = False
