@@ -5,8 +5,9 @@ from threading import Thread
 
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    IP = input("Enter The IP: ")
     PORT = input("Enter The PORT: ")
-    s.bind(('localhost', int(PORT)))
+    s.bind((IP, int(PORT)))
     s.listen(0)
 
     users = []
