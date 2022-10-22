@@ -1,6 +1,6 @@
+import json
 import socket
 import sys
-import json
 from functools import partial
 
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -126,12 +126,10 @@ class GameSession(QWidget):
             self.array_of_buttons[i].clicked.connect(partial(self.evt, i))
             self.grid.addWidget(self.array_of_buttons[i], *array_of_positions[i])
 
-
         self.my_thread = Thread()
         self.my_thread.signal_of_do.connect(self.func_for_do)
         self.my_thread.signal_of_position.connect(self.func_for_position)
         self.my_thread.start()
-
 
     def func_for_do(self, task):
         if task == 'connected':
@@ -139,9 +137,6 @@ class GameSession(QWidget):
         elif task == 'unlock':
             for i in range(0, 9):
                 self.array_of_buttons[i].setDisabled(False)
-        elif task == 'lock':
-            for i in range(0, 9):
-                self.array_of_buttons[i].setDisabled(True)
         elif 'cross' in task:
             self.lbl_cross.setText(task.split(' ')[1])
         elif 'circle' in task:
@@ -160,9 +155,8 @@ class GameSession(QWidget):
                 msg.setText('Draw!')
                 msg.exec()
 
-
-
     def func_for_position(self, positions):
+        self.positions = positions
         for i in range(9):
             if positions[i] == 1:
                 self.array_of_buttons[i].setIcon(QIcon("../cross.png"))
@@ -171,21 +165,21 @@ class GameSession(QWidget):
             else:
                 self.array_of_buttons[i].setIcon(QIcon("../empty.png"))
 
-
-
     def evt(self, i):
-        try:
-            self.sock.send(str(i).encode('utf-8'))
-        except:
-            self.sock.close()
-            app.quit()
-        for i in range(0, 9):
-            self.array_of_buttons[i].setDisabled(True)
+        if self.positions[i] == 0:
+            try:
+                self.sock.send(str(i).encode('utf-8'))
+            except:
+                self.sock.close()
+                app.quit()
+            for i in range(0, 9):
+                self.array_of_buttons[i].setDisabled(True)
 
 
 class Thread(QThread):
     signal_of_position = pyqtSignal(list)
     signal_of_do = pyqtSignal(str)
+
     def __init__(self):
         super().__init__()
 
@@ -200,6 +194,7 @@ class Thread(QThread):
                 if ans in 'connected unlock lock':
                     self.signal_of_do.emit(ans)
                 else:
+                    self.msleep(200)
                     ans = json.loads(ans)
                     self.signal_of_do.emit(f'cross {ans[0]}')
                     self.signal_of_do.emit(f'circle {ans[1]}')
