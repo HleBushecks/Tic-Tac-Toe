@@ -15,10 +15,11 @@ try:
     CONNECTED = 'connected'.encode('utf-8')
     UNLOCK = 'unlock'.encode('utf-8')
 
-
     class GameSession:
         def __init__(self, session):
+            global CONNECTED, UNLOCK
             session = session
+
             def check_answers(cross, circle):
                 win_combo = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
                 winner = -1
@@ -37,7 +38,6 @@ try:
                 connection[1][0].send(msg)
                 connection[2][0].send(msg)
 
-            global CONNECTED, UNLOCK, LOCK
             first_pl = session[1]
             second_pl = session[2]
 
@@ -120,20 +120,23 @@ try:
 
                 time.sleep(0.5)
 
+
     while True:
-           connection, address = s.accept()
-           ans = connection.recv(1024).decode('utf-8')
-           if ans == 'NS':
-               users.append([len(users), (connection, address)])
-               connection.send(str(len(users) - 1).encode('utf-8'))
-           else:
-               id = int(ans)
-               if id < len(users):
-                   users[id].append((connection, address))
-                   connection.send(f"{len(users) - 1}".encode('utf-8'))
-           for i in users:
-               if len(i) == 3:
-                   th = Thread(target=partial(GameSession, i), daemon=True)
-                   th.start()
+        connection, address = s.accept()
+        ans = connection.recv(1024).decode('utf-8')
+        if ans == 'NS':
+            users.append([len(users), (connection, address)])
+            connection.send(str(len(users) - 1).encode('utf-8'))
+        else:
+            id = int(ans)
+            if id < len(users):
+                users[id].append((connection, address))
+                connection.send(f"{len(users) - 1}".encode('utf-8'))
+        for i in users:
+            if len(i) == 3:
+                th = Thread(target=partial(GameSession, i), daemon=True)
+                th.start()
+                i.append(1)
+
 except:
     s.close()
